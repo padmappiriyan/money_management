@@ -4,6 +4,8 @@ import { CashLedger, CASH_LEDGER_STATUS } from '../models/cashLedger.model.js';
 import { Transaction } from '../models/transaction.model.js';
 import UserPlatformBalance from '../models/userPlatformBalance.model.js';
 import { AuditLog, AUDIT_ACTIONS } from '../models/auditLog.model.js';
+import Notification from '../models/notification.model.js';
+import { getIO } from '../socket.js';
 
 /**
  * @desc    Set opening balance for the day
@@ -208,6 +210,8 @@ const closeLedger = asyncHandler(async (req, res) => {
         }
     });
 
+
+
     res.json({
         success: true,
         data: ledger,
@@ -295,6 +299,35 @@ const updateReconciliation = asyncHandler(async (req, res) => {
     ledger.creditAmount = creditAmount || 0;
 
     await ledger.save();
+
+    // --- Discrepancy Notification Logic ---
+    const calculatedBalance = (ledger.actualClosing || 0) + (ledger.depositAmount || 0) - (ledger.creditAmount || 0);
+    const difference = calculatedBalance - (ledger.totalTransactionNet || 0);
+    
+    if (Math.abs(difference) > 0.01) {
+        try {
+            const statusType = difference > 0 ? 'Surplus' : 'Shortage';
+            const notification = await Notification.create({
+                type: 'DISCREPANCY',
+                title: 'Reconciliation Discrepancy Detected',
+                message: `Attention: A ${statusType.toLowerCase()} of ${ledger.currency} ${Math.abs(difference).toFixed(2)} was detected in the daily drawer reconciliation submitted by ${req.user.name || req.user.email}.`,
+                targetRole: 'admin',
+                metadata: {
+                    ledgerId: ledger._id,
+                    staffId: req.user.id,
+                    difference: difference,
+                    currency: ledger.currency,
+                    actualClosing: ledger.actualClosing,
+                    totalTransactionNet: ledger.totalTransactionNet
+                }
+            });
+
+            const io = getIO();
+            io.to('admin_room').emit('NEW_NOTIFICATION', notification);
+        } catch (error) {
+            console.error('Failed to send discrepancy notification in updateReconciliation:', error);
+        }
+    }
 
     res.json({
         success: true,

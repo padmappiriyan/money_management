@@ -30,6 +30,7 @@ import analyticsRoutes from './routes/analyticsRoutes.js';
 import cashLedgerRoutes from './routes/cashLedgerRoutes.js';
 import userBalanceRoutes from './routes/userBalanceRoutes.js';
 import reportsRoutes from './routes/reportsRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 
 // Worker initialization
 import { startStatsWorker } from './workers/statsWorker.js';
@@ -105,6 +106,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/ledger', cashLedgerRoutes);
 app.use('/api/user-balances', userBalanceRoutes);
 app.use('/api/reports', reportsRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', message: 'MTTMS Server is running' });
@@ -140,6 +142,10 @@ process.on('unhandledRejection', (err, promise) => {
     // Close server & exit process
     server.close(() => process.exit(1));
 });
+
+// 9. Initialize Socket.io
+import { initSocket } from './socket.js';
+initSocket(server);
 
 export default app;
 
