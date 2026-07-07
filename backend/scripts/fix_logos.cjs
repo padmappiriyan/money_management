@@ -7,7 +7,7 @@ const logos = {
     'RIA': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Ria_Money_Transfer_logo.svg/1200px-Ria_Money_Transfer_logo.svg.png'
 };
 
-const MONGO_URI = 'mongodb+srv://selvakumarpadmappiriyan_db_user:9nQJ0ngu0zdldwnq@mmts.giz24cq.mongodb.net/';
+//const MONGO_URI = 'mongodb+srv://selvakumarpadmappiriyan_db_user:9nQJ0ngu0zdldwnq@mmts.giz24cq.mongodb.net/';
 
 async function run() {
     try {
