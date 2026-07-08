@@ -1,6 +1,15 @@
 import asyncHandler from 'express-async-handler';
 import { User, USER_ROLES } from '../models/user.model.js';
 import { Activity, ACTIVITY_TYPES } from '../models/activity.model.js';
+import { Transaction } from '../models/transaction.model.js';
+import UserPlatformBalance from '../models/userPlatformBalance.model.js';
+import { CashLedger } from '../models/cashLedger.model.js';
+import DailyLedgerRollup from '../models/dailyLedgerRollup.model.js';
+import { ChangeRequest } from '../models/changeRequest.model.js';
+import { AuditLog } from '../models/auditLog.model.js';
+import Notification from '../models/notification.model.js';
+import { Platform } from '../models/platform.model.js';
+import { GlobalRate } from '../models/globalRate.model.js';
 import { userEventBus, USER_EVENTS } from '../events/userEvents.js';
 import { sendWelcomeCredentialsEmail } from '../services/emailService.js';
 import ExcelJS from 'exceljs';
@@ -202,7 +211,26 @@ const updateUserStatus = asyncHandler(async (req, res) => {
     // ── Handle HARD DELETE ──
     if (status === 'deleted') {
         const email = user.email;
-        await user.deleteOne();
+        const userId = user._id;
+
+        // Cascade Deletions across all user-specific data
+        await Promise.all([
+            Transaction.deleteMany({ staffId: userId }),
+            UserPlatformBalance.deleteMany({ userId: userId }),
+            CashLedger.deleteMany({ staffId: userId }),
+            DailyLedgerRollup.deleteMany({ staffId: userId }),
+            ChangeRequest.deleteMany({ $or: [{ requestedBy: userId }, { handledBy: userId }] }),
+            Activity.deleteMany({ user: userId }),
+            AuditLog.deleteMany({ userId: userId }),
+            Notification.deleteMany({ targetUserId: userId }),
+            user.deleteOne()
+        ]);
+
+        // Nullify references in global entities to prevent breaking the system
+        await Promise.all([
+            Platform.updateMany({ createdBy: userId }, { $set: { createdBy: null } }),
+            GlobalRate.updateMany({ updatedBy: userId }, { $set: { updatedBy: null } })
+        ]);
 
         // Log Activity
         await Activity.logAction({
