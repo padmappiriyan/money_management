@@ -35,7 +35,7 @@ const AdminReportsPage = () => {
     return (
       <div className="flex flex-col gap-10 animate-pulse px-1">
         <div className="h-20 bg-white rounded-3xl w-1/3" />
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map(i => <div key={i} className="h-40 bg-white rounded-[2.5rem]" />)}
         </div>
         <div className="h-[500px] bg-white rounded-[3.5rem]" />

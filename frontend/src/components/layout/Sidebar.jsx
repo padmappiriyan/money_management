@@ -7,7 +7,7 @@ import LogoMain from '../../assets/login/bontech.png';
 import { SIDEBAR_CONFIG } from '../../constants/sidebarConfig';
 import useLogout from '../../hooks/useLogout';
 
-const Sidebar = () => {
+const Sidebar = ({ mobileOpen, setMobileOpen }) => {
   const { userInfo } = useAuthContext();
   const { handleLogout } = useLogout();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -19,11 +19,27 @@ const Sidebar = () => {
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
   return (
-    <motion.aside
-      animate={{ width: isCollapsed ? '88px' : '280px' }}
-      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="h-screen bg-white border-r border-neutral-100 flex flex-col relative z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)]"
-    >
+    <>
+      {/* Mobile Backdrop */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setMobileOpen(false)}
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      <motion.aside
+        initial={false}
+        animate={{ 
+          width: isCollapsed ? '88px' : '280px',
+        }}
+        className={`fixed lg:relative inset-y-0 left-0 h-screen bg-white border-r border-neutral-100 flex flex-col z-50 shadow-2xl lg:shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-in-out ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+      >
       {/* ── Logo Section ── */}
       <div className="h-20 flex items-center px-6 mb-4 mt-2 overflow-hidden">
         <div className="relative flex-shrink-0 w-32 h-32 flex items-center justify-center">
@@ -40,10 +56,10 @@ const Sidebar = () => {
         )}
       </div>
 
-      {/* ── Toggle Button ── */}
+      {/* ── Toggle Button (Desktop Only) ── */}
       <button
         onClick={toggleSidebar}
-        className="absolute -right-3 top-24 w-6 h-6 bg-brand-600 text-white rounded-full flex items-center justify-center hover:bg-brand-700 transition-colors shadow-lg shadow-brand-200 z-[60]"
+        className="hidden lg:flex absolute -right-3 top-24 w-6 h-6 bg-brand-600 text-white rounded-full items-center justify-center hover:bg-brand-700 transition-colors shadow-lg shadow-brand-200 z-[60]"
       >
         {isCollapsed ? <FiChevronRight size={14} /> : <FiChevronLeft size={14} />}
       </button>
@@ -126,6 +142,7 @@ const Sidebar = () => {
         </button>
       </div>
     </motion.aside>
+    </>
   );
 };
 

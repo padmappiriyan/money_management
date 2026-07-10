@@ -275,7 +275,7 @@ const AdminDashboard = ({ userInfo }) => {
             {/* ── Excel Workspace Section ── */}
             <section className="px-1">
                 {/* Selector Bar */}
-                <div className="flex items-center justify-between bg-white px-4 py-4 rounded-xl border border-neutral-200 shadow-sm mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white px-4 py-4 rounded-xl border border-neutral-200 shadow-sm mb-4 gap-4">
                     <div className="flex items-center gap-2">
                         <Users size={15} className="text-slate-400" />
                         <span className="text-[10px] font-bold uppercase text-brand-800  mr-1">Select Users:</span>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from '../components/layout/Sidebar';
-import { FiGlobe, FiBell, FiSearch, FiCheck } from 'react-icons/fi';
+import { FiGlobe, FiBell, FiSearch, FiCheck, FiMenu } from 'react-icons/fi';
 import { useSocketContext } from '../contexts/SocketContext';
 import { fetchNotifications, markNotificationAsRead } from '../api/notificationApi';
 import toast from 'react-hot-toast';
@@ -15,6 +15,12 @@ const DashboardLayout = () => {
   const { socket } = useSocketContext();
   const [notifications, setNotifications] = useState([]);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // Close sidebar on route change
+  useEffect(() => {
+    setIsMobileSidebarOpen(false);
+  }, [location.pathname]);
 
   // Time ticker
   useEffect(() => {
@@ -97,20 +103,26 @@ const DashboardLayout = () => {
   return (
     <div className="flex h-screen w-screen bg-[#F8F9FA] overflow-hidden">
       {/* ── Sidebar (Left) ── */}
-      <Sidebar />
+      <Sidebar mobileOpen={isMobileSidebarOpen} setMobileOpen={setIsMobileSidebarOpen} />
 
       {/* ── Main Content Area (Right) ── */}
       <main className="flex-1 h-full overflow-y-auto overflow-x-hidden relative transition-all duration-300 ease-in-out bg-neutral-50/20 flex flex-col">
 
         {/* ── Reusable Top Navigation Bar ── */}
         <header className="sticky bg-white top-0 z-50 backdrop-blur-xl shadow-sm flex items-center justify-between px-6 py-3 transition-all border-b border-slate-100">
-          <div className="flex items-center gap-8">
-            <h1 className="text-[17px] font-bold text-brand-600 tracking-tight flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-8">
+            <button 
+                onClick={() => setIsMobileSidebarOpen(true)}
+                className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-colors"
+            >
+                <FiMenu size={22} />
+            </button>
+            <h1 className="text-[15px] md:text-[17px] font-bold text-brand-600 tracking-tight flex items-center gap-4">
               {pageTitle}
-              <span className="w-[1px] h-5 bg-slate-200" />
+              <span className="hidden md:block w-[1px] h-5 bg-slate-200" />
             </h1>
 
-            <div className="flex items-center gap-2 text-slate-400 font-medium text-[13px]">
+            <div className="hidden md:flex items-center gap-2 text-slate-400 font-medium text-[13px]">
               <FiGlobe className="text-slate-300" size={16} />
               <span className="tabular-nums">
                 {currentTime.toLocaleDateString(undefined, {
